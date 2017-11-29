@@ -6,6 +6,7 @@
 		<project>playgrd_core</project>
 		<project>playgrd_controllers</project>
 		<project>playgrd_pipelines</project>
+		<project>playgrd_test</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
