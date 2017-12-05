@@ -7,7 +7,7 @@ var guard = require('playgrd_controllers/cartridge/scripts/guard');
 
 function makePostWithJsonPayload(){
 	var myHttpService:HTTPService = LocalServiceRegistry.createService("playgrd_test.http.test", {
-		mockCall: function(svc:HTTPService, params) {
+		mockFull: function(svc:HTTPService, params) {
 			return {"message":"hello this is a mock result"};
 		},
 		createRequest: function(svc:HTTPService, params) {
