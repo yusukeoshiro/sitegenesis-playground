@@ -24,7 +24,7 @@ function makePostWithJsonPayload(){
 					"password": "password"
 				}
 			}			
-			return JSON.stringify(jsonObject);
+			return JSON.stringify(jsonObject); // return the payload at the end of createRequest callback
 		},
 		parseResponse: function(svc:HTTPService, output) {
 			var result = JSON.parse( output.text );
