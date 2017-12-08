@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<form>
+	<field formid="fname" label="first name" type="string" mandatory="true" binding="custom.firstName" max-length="50"/>
+	<field formid="lname" label="last name" type="string" mandatory="true" binding="custom.lastName" max-length="50"/>
+
+    <field formid="myoption" label="" type="string" mandatory="false" default-value="true" binding="is_enabled">
+        <options>
+            <option optionid="true" label="label_true" value="true"/>
+            <option optionid="false" label="label_false" value="false"/>
+        </options>
+    </field>
+    
+	<action formid="subscribe" valid-form="true"/>
+	<action formid="cancel" valid-form="false"/>
+</form>
