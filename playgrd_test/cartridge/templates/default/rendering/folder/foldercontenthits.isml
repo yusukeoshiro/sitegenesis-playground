@@ -1,5 +1,6 @@
 <iscontent type="text/html" charset="UTF-8" compact="true"/>
-<isdecorate template="search/pt_contentsearchresult">
+<isdecorate template="search/pt_contentsearchresult_content">
+	
 	<isinclude template="util/modules"/>
 	
 	<iscomment>create reporting event</iscomment>

@@ -54,6 +54,14 @@ SearchModel.initializeSearchModel = function (searchModel, httpParameterMap) {
             }
         }
 
+        nameMap = httpParameterMap.getParameterMap('crefn');
+        valueMap = httpParameterMap.getParameterMap('crefv');
+
+        for (var i in nameMap) {
+            if (valueMap[i]) {
+                searchModel.addRefinementValues(nameMap[i], valueMap[i]);
+            }
+        }
     }
     return searchModel;
 };

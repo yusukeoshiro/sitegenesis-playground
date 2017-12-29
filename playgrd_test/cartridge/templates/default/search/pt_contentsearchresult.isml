@@ -30,16 +30,7 @@
 
 		<div id="main" role="main" class="page-content clearfix">
 			<isinclude template="components/browsertoolscheck"/>
-			<isinclude template="search/components/contentsearchbreadcrumbs"/>
-
-			<div id="primary" class="primary-content">
-				<isreplace/>
-			</div>
-
-			<div id="secondary" class="nav refinements">
-				<isinclude template="search/components/contentsearchrefinebar"/>
-			</div>
-
+			<isreplace/>
 		</div>
 
 		<isinclude template="components/footer/footer"/>
