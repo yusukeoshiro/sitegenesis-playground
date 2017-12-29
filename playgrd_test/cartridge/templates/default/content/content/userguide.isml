@@ -1,0 +1,35 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<isscript>
+    var ContentMgr = require("dw/content/ContentMgr");
+</isscript>
+<isset name="userGuide" value="${JSON.parse(pdict.Content.custom.body)}" scope="page"/>
+
+
+<isdecorate template="content/content/pt_content">
+<iscache type="relative" hour="24"/>
+
+
+<isloop items="${userGuide.user_guide.list}" var="item">
+    <isscript>
+        dw.system.Logger.error( item.contents );
+        var contents = [];
+        for( var i = 0; i < item.contents.length; i++ ){
+            var content = ContentMgr.getContent( item.contents[i] );
+            if( content != null ){
+                contents.push( content )
+            }
+        }
+    </isscript>
+    <ul>
+        <li>${item.title}</li>
+        <ul>
+            <isloop items="${contents}" var="content">
+                <li>
+                    ${content.name}
+                </li>
+            </isloop>
+        </ul>
+    </ul>
+</isloop>
+
+</isdecorate>
