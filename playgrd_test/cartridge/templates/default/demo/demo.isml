@@ -1,0 +1,7 @@
+
+
+
+<isloop items="${pdict.products}" var="product">
+    <isprint value="${product.name}"/> <br/>
+    <isprint value="${product.ID}"/>
+</isloop>
