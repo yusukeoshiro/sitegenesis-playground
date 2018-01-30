@@ -1,0 +1,13 @@
+
+<isscript> 
+    var productId = "25518769";
+    ProductMgr = dw.catalog.ProductMgr;
+    var myProduct = ProductMgr.getProduct( productId );
+    var priceModel = myProduct.getPriceModel();
+    
+</isscript>
+
+
+Product Id: ${myProduct.ID} <br/>
+Product Name: ${myProduct.name} <br/>
+Price: ${priceModel.getMinPrice().value} - ${priceModel.getMaxPrice().value}
