@@ -4,7 +4,7 @@ Usecase:
 Search against commerce cloud search engine using built on custom field.
 For this demo case, a custom field called "myCustomField" (string type) was created on Product object.
 
-Demo.js demonstrates how to take advantage of the built-in search engine. 
+playgrd_test/cartridge/controllers/Demo.js demonstrates how to take advantage of the built-in search engine. 
 
 ## Prerequisite:
 * Create a new custom field on product called "myCustomField"
