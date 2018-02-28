@@ -1,0 +1,31 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<isset name="productList" value="${pdict.productList}" scope="page" />
+
+
+<div class="container">
+    <p>
+        <h1>About You:</h1>
+        Customer ID: ${customer.ID} <br/>
+        Customer registered: ${customer.registered} <br/>
+        Customer authenticated: ${customer.authenticated} <br/>
+
+        <h1>About the Owner of this Product List:</h1>
+        Owner: ${productList.getOwner()} <br/>
+        Owner ID: ${productList.owner.ID} <br/>
+        Owner registered: ${productList.owner.registered} <br/>
+        Owner authenticated: ${productList.owner.authenticated} <br/>
+
+        <h1>About this Product List:</h1>
+        productList ID: = ${productList.ID} <br/>
+        creationDate: = ${productList.creationDate} <br/>
+        total: ${productList.getItems().getLength()}
+
+        
+    </p>
+    displaying the first 100 elements:
+    <isloop iterator="${productList.getItems()}" var="item" end="100">
+        <li>${item.ID} | ${item.product.name}</li>
+    </isloop>
+</div>
+
+
