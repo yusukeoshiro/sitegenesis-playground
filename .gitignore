@@ -1,4 +1,13 @@
+<<<<<<< HEAD
 .vscode
 dw.json
 .api
 playgrd_core_cartridge.zip
+=======
+.DS_Store
+
+.vscode
+dw.json
+.api
+*.zip
+>>>>>>> master
