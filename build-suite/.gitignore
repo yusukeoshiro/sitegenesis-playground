@@ -10,7 +10,7 @@ node_modules
 .vscode
 
 #Exclude all existing configurations (except sample)
-build/*
+!build/*
 !build/config.json.*
 !build/sitegenesis-sample.*
 !build/mfra-sample.*

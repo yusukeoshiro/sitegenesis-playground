@@ -1,0 +1,31 @@
+{
+  "dependencies": [
+    {
+      "repository": {
+        "url": "https://github.com/yusukeoshiro/sitegenesis-playground.git",
+        "type": "git",
+        "branch" : "${branch}"
+
+        },
+        "source": {
+          "path": "cartridges"
+        }
+
+    }
+  ],
+
+  "environments": {
+    "sample": {
+      "server": "yoshiro-inside-ap01-dw.demandware.net",
+      "username": "admin",
+      "password": "${password}"
+    }
+  },
+
+  "settings": {
+    "project": {
+      "version": "project-build",
+      "build": "${build}"
+    }
+  }
+}
