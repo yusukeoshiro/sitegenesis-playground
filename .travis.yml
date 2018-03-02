@@ -4,8 +4,7 @@ node_js:
 before_install:
     - cd build-suite
     - npm install -g grunt-cli
-    - cd ..
-install: 
+install:
     - npm install
     - npm install grunt
 script:
