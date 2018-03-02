@@ -7,6 +7,5 @@ before_install:
 install:
     - npm install
     - npm install grunt
-script:
-    - cd build-suite
+script:    
     - grunt dist --branch=${BRANCH} --build=${TRAVIS_JOB_NUMBER} --password='${PASSWORD}' --project=${PROJECT}
