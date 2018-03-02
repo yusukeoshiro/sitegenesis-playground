@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "stable"
+before_install:
+    - cd build-suite
+    - npm install -g grunt-cli
+install: npm install
+script:
+    - cd build-suite
+    - grunt dist --branch=${BRANCH} --build=${TRAVIS_JOB_NUMBER} --password='${PASSWORD}' --project=${PROJECT}
