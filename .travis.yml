@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - "stable"
+cache:
+  directories:
+    - build-suite/node_modules
+before_install:
+    - cd build-suite
+    - npm install -g grunt-cli
+install:
+    - npm install
+    - npm install grunt
+script:    
+    - grunt dist --branch=$BRANCH --build=$TRAVIS_JOB_NUMBER --password=$DW_PASSWORD --project=$PROJECT
