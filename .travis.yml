@@ -10,6 +10,5 @@ before_install:
 install:
     - npm install
     - npm install grunt
-script:
-    - echo "grunt dist --branch=${BRANCH} --build=${TRAVIS_JOB_NUMBER} --password='${DW_PASSWORD}' --project=${PROJECT}"
-    - grunt dist --branch=${BRANCH} --build=${TRAVIS_JOB_NUMBER} --password='${DW_PASSWORD}' --project=${PROJECT}
+script:    
+    - grunt dist --branch=$BRANCH --build=$TRAVIS_JOB_NUMBER --password=$DW_PASSWORD --project=$PROJECT
