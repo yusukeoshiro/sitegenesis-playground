@@ -11,7 +11,7 @@
           "path": "cartridges"
         }
 
-      
+
     }
   ],
 
@@ -19,7 +19,7 @@
     "sample": {
       "server": "yoshiro-inside-ap01-dw.demandware.net",
       "username": "admin",
-      "password": "H3g2J2yLvSkJBce3%"
+      "password": "${password}"
     }
   },
 
