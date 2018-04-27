@@ -1420,6 +1420,8 @@ var CartModel = AbstractModel.extend({
                 return OrderMgr.createOrder(basket);
             });
         } catch (error) {
+            let e = error.toString();
+            dw.system.Logger.error( error );
             return;
         }
 

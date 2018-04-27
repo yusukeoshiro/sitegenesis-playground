@@ -1,4 +1,87 @@
 [{
+	"countryCode": "JP",
+	"name": {
+		"ja_JP": "日本",
+		"en_JP": "Japan"
+	},
+	"continent": "asia",
+	"locales": ["ja_JP", "en_JP"],
+	"currencyCode": "JPY",
+	"taxation": {
+		"type": "gross",
+		"rate": 0.1
+	},
+	"priceBooks" : [
+		"jpy-list-prices",
+		"jpy-sale-prices"
+	],
+	"dynamicForms": {
+		"addressDetails": {
+			"country": {
+				"type": "select"
+			},
+			"states": [{
+				"fieldName": "state",
+				"type": "select",
+				"required": true
+			}],
+			"phone": {
+				"help": {
+					"cid": "help-telephone",
+					"label": {
+						"property": "singleshipping.phonerequired",
+						"file": "checkout"
+					}
+				}
+			}
+		},
+		"giftRegistryEvent" : {
+			"eventaddress": [{
+				"fieldName": "country",
+				"type": "select"
+			}, {
+				"fieldName": "states.state",
+				"type": "select",
+				"required": true
+			}],
+			"type": {
+				"type": "select"
+			}
+		},
+		"giftRegistrySearch": {
+			"simple": {
+				"eventType": {
+					"type": "select"
+				}
+			},
+			"advanced": {
+				"eventMonth": {
+					"type": "select"
+				},
+				"eventYear": {
+					"type": "select"
+				},
+				"eventAddress": [{
+					"fieldName": "states.state",
+					"type": "select"
+				}, {
+					"fieldName": "country",
+					"type": "select"
+				}]
+			}
+		},
+		"expirationInfo": {
+			"year" : {
+				"type" : "select",
+				"rowclass": "year"
+			},
+			"month" : {
+				"type" : "select",
+				"rowclass": "month"
+			}
+		}
+	}
+}, {
 	"countryCode": "US",
 	"name": {
 		"en_US": "United States"
@@ -148,89 +231,6 @@
 				},
 				"eventAddress": [{
 					"fieldName": "states.state"
-				}, {
-					"fieldName": "country",
-					"type": "select"
-				}]
-			}
-		},
-		"expirationInfo": {
-			"year" : {
-				"type" : "select",
-				"rowclass": "year"
-			},
-			"month" : {
-				"type" : "select",
-				"rowclass": "month"
-			}
-		}
-	}
-}, {
-	"countryCode": "JP",
-	"name": {
-		"ja_JP": "日本",
-		"en_JP": "Japan"
-	},
-	"continent": "asia",
-	"locales": ["ja_JP", "en_JP"],
-	"currencyCode": "JPY",
-	"taxation": {
-		"type": "gross",
-		"rate": 0.1
-	},
-	"priceBooks" : [
-		"jpy-list-prices",
-		"jpy-sale-prices"
-	],
-	"dynamicForms": {
-		"addressDetails": {
-			"country": {
-				"type": "select"
-			},
-			"states": [{
-				"fieldName": "state",
-				"type": "select",
-				"required": true
-			}],
-			"phone": {
-				"help": {
-					"cid": "help-telephone",
-					"label": {
-						"property": "singleshipping.phonerequired",
-						"file": "checkout"
-					}
-				}
-			}
-		},
-		"giftRegistryEvent" : {
-			"eventaddress": [{
-				"fieldName": "country",
-				"type": "select"
-			}, {
-				"fieldName": "states.state",
-				"type": "select",
-				"required": true
-			}],
-			"type": {
-				"type": "select"
-			}
-		},
-		"giftRegistrySearch": {
-			"simple": {
-				"eventType": {
-					"type": "select"
-				}
-			},
-			"advanced": {
-				"eventMonth": {
-					"type": "select"
-				},
-				"eventYear": {
-					"type": "select"
-				},
-				"eventAddress": [{
-					"fieldName": "states.state",
-					"type": "select"
 				}, {
 					"fieldName": "country",
 					"type": "select"

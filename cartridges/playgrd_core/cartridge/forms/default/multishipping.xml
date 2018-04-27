@@ -13,7 +13,7 @@
 		<list formid="quantityLineItems">
 			<field formid="lineItemUUID" binding="UUID" type="string"/>
 			
-			<field formid="addressList" type="string" mandatory="true">
+			<field formid="addressList" type="string" mandatory="true" validation="${require('playgrd_test/cartridge/scripts/forms/customvalidator.js').myCustomValidation(formfield)}">
 				<options optionid-binding="UUID" value-binding="UUID" label-binding="ID"/>
 			</field>
 		</list>
@@ -52,10 +52,10 @@
 	</group>
 	
 	<group formid="editAddress" form-error="address.invalid">
-		<field formid="addressList" type="string" mandatory="true">
+		<field formid="addressList" type="string" mandatory="true" validation="${require('playgrd_test/cartridge/scripts/forms/customvalidator.js').myCustomValidation(formfield)}">
 			<options optionid-binding="UUID" value-binding="UUID" label-binding="ID" />
 		</field>
-		
+	
 		<!-- use fields from shipping address definition -->
 		<include formid="addressFields" name="shippingaddress"/>
 	

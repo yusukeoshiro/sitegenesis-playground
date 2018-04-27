@@ -11,15 +11,16 @@
 		        <isinputfield formfield="${pdict.CurrentForms.sampleform.fname}" type="input" attributes="${attributes}" rowClass="yourClass">
 		    </div>
 		    <div class="formfield">
+				
 		        <isinputfield formfield="${pdict.CurrentForms.sampleform.lname}" type="input">
 		    </div>
 			<div class="formactions">
-				<input type="submit" value="${Resource.msg('global.submit','locale',null)}" name="${pdict.CurrentForms.sample.subscribe.htmlName}"/>
+				<input type="submit" value="${Resource.msg('global.submit','locale',null)}" name="${pdict.CurrentForms.sampleform.subscribe.htmlName}" />
 			</div>
-			<div class="formactions">
+			<iscomment> <div class="formactions">
 				<isinputfield rowclass="input-form-control" formfield="${pdict.CurrentForms.sampleform.myoption}" type="select">
-			</div>
-			<input type="submit" value="${Resource.msg('global.cancel','locale',null)}" name="${pdict.CurrentForms.sample.cancel.htmlName}"/>
+			</div> </iscomment>
+			<input type="submit" value="${Resource.msg('global.cancel','locale',null)}" name="${pdict.CurrentForms.sampleform.cancel.htmlName}"/>
 		</fieldset>
 	</form>
 

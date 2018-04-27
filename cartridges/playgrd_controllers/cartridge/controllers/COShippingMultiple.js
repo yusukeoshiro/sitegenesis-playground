@@ -95,6 +95,12 @@ function multiShippingAddresses() {
                 }).render('checkout/shipping/multishipping/multishippingaddresses');
                 return;
             }
+        },
+        error: function(a,b,c){
+            
+            app.getView().render('checkout/shipping/multishipping/multishippingaddresses');
+            
+            // /Users/yusuke/dev/demandware/playground/cartridges/playgrd_core/cartridge/templates/default/checkout/shipping/multishipping/multishippingaddresses.isml
         }
     });
 }
