@@ -134,6 +134,17 @@
 
 		</div>
 
+		<iscomment>
+			MY Payment
+			--------------------------------------------------------------
+		</iscomment>
+
+		<div class="payment-method <isif condition="${!empty(pdict.selectedPaymentID) && pdict.selectedPaymentID=='MY_PAYMENT'}">payment-method-expanded</isif>" data-method="MY_PAYMENT">
+
+			hello
+
+		</div>
+
 
 		<iscomment>
 			Custom processor

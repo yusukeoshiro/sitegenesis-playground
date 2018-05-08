@@ -39,6 +39,10 @@
 		{
 			"name": "app.payment.processor.VERISIGN_CREDIT",
 			"script": "./payment/processor/VERISIGN_CREDIT"
+		},
+		{
+			"name": "app.payment.processor.MY_PAYMENT_PROCESSOR",
+			"script": "./payment/processor/MY_PAYMENT_PROCESSOR"
 		}
 	]
 }
