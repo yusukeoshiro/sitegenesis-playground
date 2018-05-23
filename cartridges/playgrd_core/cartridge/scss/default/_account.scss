@@ -60,3 +60,12 @@ h1 .account-logout {
         font-weight: 700;
     }
 }
+
+.profile-data-download {
+    position: absolute;
+    right: 0;
+    margin-right: 4.3em;
+    @media screen and (max-width: 768px) {
+        display: none;
+    }
+}

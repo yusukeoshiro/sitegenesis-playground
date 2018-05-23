@@ -31,7 +31,29 @@ function show() {
     pageMeta = require('~/cartridge/scripts/meta');
     pageMeta.update(accountHomeAsset);
 
-    app.getView().render('account/accountoverview');
+    app.getView({downloadAvailable: true}).render('account/accountoverview');
+}
+
+/**
+ * Allows a logged in user to download the data from their profile in a csv file.
+ */
+function datadownload() {
+    var profile = customer.profile;
+    var profileDataHelper = require('~/cartridge/scripts/profileDataHelper');
+    let response = require('~/cartridge/scripts/util/Response');
+    var site = require('dw/system/Site');
+    var fileName = site.current.name + '_' + profile.firstName + '_' + profile.lastName + '.json';
+    response.renderData(profileDataHelper.getProfileData(profile), fileName);
+    return;
+}
+
+/**
+ * Set the consent tracking settings for the session
+ */
+function consentTracking() {
+    var consent = request.httpParameterMap.consentTracking.value == 'true';
+    session.custom.consentTracking = consent;
+    session.setTrackingAllowed(consent);
 }
 
 /**
@@ -314,6 +336,13 @@ function setNewPasswordForm() {
                     app.getView().render('account/password/setnewpassword_confirm');
                 }
             }
+        },
+        error: function () {
+            app.getView({
+                ErrorCode: 'formnotvalid',
+                ContinueURL: URLUtils.https('Account-SetNewPasswordForm'),
+                Token: request.httpParameterMap.Token.getStringValue()
+            }).render('account/password/setnewpassword');
         }
     });
 }
@@ -386,7 +415,7 @@ function registrationForm() {
                         Transaction.wrap(function(){
                             foundOrder.customer = profileValidation;
                         })
-                        session.custom.TargetLocation = URLUtils.https('Account-Show','Registration','true');
+                        session.custom.TargetLocation = URLUtils.https('Account-Show','Registration','true').toString();
                     }
                 }
             }
@@ -424,6 +453,15 @@ function includeNavigation() {
 /** Renders the account overview.
  * @see {@link module:controllers/Account~show} */
 exports.Show = guard.ensure(['get', 'https', 'loggedIn'], show);
+
+/** returns customer data in json format.
+ * @see {@link module:controllers/Account~datadownload} */
+exports.DataDownload = guard.ensure(['get', 'https', 'loggedIn'], datadownload);
+
+/** Renders the account overview.
+ * @see {@link module:controllers/Account~data} */
+exports.ConsentTracking = guard.ensure(['get'], consentTracking);
+
 /** Updates the profile of an authenticated customer.
  * @see {@link module:controllers/Account~editProfile} */
 exports.EditProfile = guard.ensure(['get', 'https', 'loggedIn'], editProfile);

@@ -532,25 +532,27 @@ function billing() {
             return;
         },
         save: function () {
-            var cart = app.getModel('Cart').get();
+            Transaction.wrap(function () {
+                var cart = app.getModel('Cart').get();
+	
+                if (!resetPaymentForms() || !validateBilling() || !handleBillingAddress(cart) || // Performs validation steps, based upon the entered billing address
+                // and address options.
+                handlePaymentSelection(cart).error) {// Performs payment method specific checks, such as credit card verification.
+                    returnToForm(cart);
+                } else {
+    
+                    if (customer.authenticated && app.getForm('billing').object.billingAddress.addToAddressBook.value) {
+                        app.getModel('Profile').get(customer.profile).addAddressToAddressBook(cart.getBillingAddress());
+                    }
 
-            if (!resetPaymentForms() || !validateBilling() || !handleBillingAddress(cart) || // Performs validation steps, based upon the entered billing address
-            // and address options.
-            handlePaymentSelection(cart).error) {// Performs payment method specific checks, such as credit card verification.
-                returnToForm(cart);
-            } else {
+                    // Mark step as fulfilled
+                    app.getForm('billing').object.fulfilled.value = true;
 
-                if (customer.authenticated && app.getForm('billing').object.billingAddress.addToAddressBook.value) {
-                    app.getModel('Profile').get(customer.profile).addAddressToAddressBook(cart.getBillingAddress());
+                    // A successful billing page will jump to the next checkout step.
+                    app.getController('COSummary').Start();
+                    return;
                 }
-
-                // Mark step as fulfilled
-                app.getForm('billing').object.fulfilled.value = true;
-
-                // A successful billing page will jump to the next checkout step.
-                app.getController('COSummary').Start();
-                return;
-            }
+            });
         },
         selectAddress: function () {
             updateAddressDetails();

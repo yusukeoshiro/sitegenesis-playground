@@ -16,10 +16,10 @@
  * exports.Show = require('~/guard').ensure(['get','https','loggedIn'],show);
  */
 var CSRFProtection = require('dw/web/CSRFProtection');
+var Resource = require('dw/web/Resource');
 
 var app = require('~/cartridge/scripts/app');
 var browsing = require('~/cartridge/scripts/util/Browsing');
-var LOGGER   = dw.system.Logger.getLogger('guard');
 
 /**
  * This method contains the login to handle a not logged in customer
@@ -68,7 +68,7 @@ function csrfValidationFailed() {
         app.getModel('Customer').logout();
         let r = require('~/cartridge/scripts/util/Response');
         r.renderJSON({
-            error: 'CSRF Token Mismatch'
+            error: Resource.msg('global.csrf.failed.error', 'locale', null)
         });
     } else {
         app.getModel('Customer').logout();
@@ -122,7 +122,6 @@ function ensure (filters, action, params) {
         params = require('~/cartridge/scripts/object').extend(params,args);
 
         for (var i = 0; i < filters.length; i++) {
-            LOGGER.debug('Ensuring guard "{0}"...',filters[i]);
 
             filtersPassed = Filters[filters[i]].apply(Filters);
             if (!filtersPassed) {
@@ -145,10 +144,8 @@ function ensure (filters, action, params) {
         }
 
         if (filtersPassed) {
-            LOGGER.debug('...passed.');
             return action(params);
         } else {
-            LOGGER.debug('...failed. {0}',error.name);
             return error(params);
         }
     });

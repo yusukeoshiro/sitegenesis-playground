@@ -17,17 +17,6 @@
 			category = pdict.ProductSearchResult.category;
 		}
 
-		// get category from parameters
-		if( category == null && pdict.CurrentHttpParameterMap.cgid != null)
-		{
-			categoryTmp = dw.catalog.CatalogMgr.getCategory(pdict.CurrentHttpParameterMap.cgid.stringValue);
-			// check if category is assigned to product
-			if(categoryTmp != null && (pdict.Product.isAssignedToCategory(categoryTmp) ? true : pdict.Product.variationModel.master != null ? pdict.Product.variationModel.master.isAssignedToCategory(categoryTmp) : false) )
-			{
-				category = categoryTmp;
-			}
-		}
-
 		if( category == null )
 		{
 			// get category from products primary category

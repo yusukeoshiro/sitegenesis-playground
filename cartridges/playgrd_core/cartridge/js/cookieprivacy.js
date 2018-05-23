@@ -10,7 +10,7 @@ module.exports = function () {
      * If we have not accepted cookies AND we're not on the Privacy Policy page, then show the notification
      * NOTE: You will probably want to adjust the Privacy Page test to match your site's specific privacy / cookie page
      */
-    if (SitePreferences.COOKIE_HINT === true && document.cookie.indexOf('dw_cookies_accepted') < 0) {
+    if (!SitePreferences.CONSENT_TRACKING_HINT && SitePreferences.COOKIE_HINT === true && document.cookie.indexOf('dw_cookies_accepted') < 0) {
         // check for privacy policy page
         if ($('.privacy-policy').length === 0) {
             dialog.open({

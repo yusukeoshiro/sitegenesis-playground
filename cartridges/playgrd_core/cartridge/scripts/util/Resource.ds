@@ -33,6 +33,8 @@ ResourceHelper.getResources = function(pageContext) {
     var resources = {
         // Common
         I_AGREE                           : Resource.msg('global.i_agree', 'locale', null),
+        TRACKING_CONSENT                  : Resource.msg('global.tracking_consent', 'locale', null),
+        TRACKING_NO_CONSENT               : Resource.msg('global.tracking_no_consent', 'locale', null),
         CLOSE                             : Resource.msg('global.close', 'locale', null),
         NO_THANKS                         : Resource.msg('global.nothanks', 'locale', null),
         OK                                : Resource.msg('global.ok', 'locale', null),
@@ -104,6 +106,7 @@ ResourceHelper.getResources = function(pageContext) {
         QUICK_VIEW                        : Resource.msg('product.quickview', 'product', null),
         QUICK_VIEW_POPUP                  : Resource.msg('product.quickview.popup', 'product', null),
         TLS_WARNING                       : Resource.msg('global.browsertoolscheck.tls', 'locale', null),
+        CSRF_TOKEN_MISMATCH               : Resource.msg('global.csrf.failed.error', 'locale', null),
 
         // Validation messages
         VALIDATE_REQUIRED                 : Resource.msg('validate.required', 'forms', null),
@@ -197,6 +200,8 @@ ResourceHelper.getUrls = function(pageContext) {
         setSessionCurrency          : URLUtils.url('Currency-SetSessionCurrency').toString(),
         addEditAddress              : URLUtils.url('COShippingMultiple-AddEditAddressJSON').toString(),
         cookieHint                  : URLUtils.url('Page-Show', 'cid', 'cookie_hint').toString(),
+        consentTracking             : URLUtils.url('Page-Show', 'cid', 'consent_tracking_hint').toString(),
+        consentTrackingSetSession   : URLUtils.url('Account-ConsentTracking').toString(),
         rateLimiterReset            : URLUtils.url('RateLimiter-HideCaptcha').toString(),
         csrffailed                  : URLUtils.url('CSRF-Failed').toString()
     };
@@ -208,11 +213,13 @@ ResourceHelper.getUrls = function(pageContext) {
  */
 ResourceHelper.getPreferences = function(pageContext) {
     var cookieHintAsset = ContentMgr.getContent('cookie_hint');
+    var consentTrackingHintAsset = ContentMgr.getContent('consent_tracking_hint');
     return {
         LISTING_INFINITE_SCROLL: (Site.getCurrent().getCustomPreferenceValue('enableInfiniteScroll') ? true : false),
         LISTING_REFINE_SORT: true,
         STORE_PICKUP: Site.getCurrent().getCustomPreferenceValue('enableStorePickUp'),
         COOKIE_HINT: (cookieHintAsset && cookieHintAsset.online) || false,
+        CONSENT_TRACKING_HINT: (consentTrackingHintAsset && consentTrackingHintAsset.online) || false,
         CHECK_TLS: Site.getCurrent().getCustomPreferenceValue('checkTLS')
     };
 }

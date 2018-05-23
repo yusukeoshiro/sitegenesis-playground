@@ -107,7 +107,7 @@ var load = function (options) {
 exports.getJson = getJson;
 exports.load = load;
 
-},{"./progress":38,"./util":48}],2:[function(require,module,exports){
+},{"./progress":39,"./util":49}],2:[function(require,module,exports){
 /**
  *    (c) 2009-2014 Demandware Inc.
  *    Subject to standard usage terms and conditions
@@ -127,7 +127,8 @@ var countries = require('./countries'),
     tooltip = require('./tooltip'),
     util = require('./util'),
     validator = require('./validator'),
-    tls = require('./tls');
+    tls = require('./tls'),
+    consentTracking = require('./consentTracking');
 
 // if jQuery has not been loaded, load from google cdn
 if (!window.jQuery) {
@@ -139,6 +140,7 @@ if (!window.jQuery) {
 
 require('./jquery-ext')();
 require('./cookieprivacy')();
+consentTracking.init();
 require('./captcha')();
 
 function initializeEvents() {
@@ -219,6 +221,11 @@ function initializeEvents() {
         });
     });
 
+    $('.consent-tracking-policy').on('click', function (e) {
+        e.preventDefault();
+        consentTracking.show();
+    });
+    
     // main menu toggle
     $('.menu-toggle').on('click', function () {
         $('#wrapper').toggleClass('menu-active');
@@ -310,7 +317,7 @@ $(document).ready(function () {
     app.init();
 });
 
-},{"./captcha":4,"./cookieprivacy":6,"./countries":7,"./dialog":8,"./jquery-ext":11,"./minicart":13,"./page":14,"./pages/account":15,"./pages/cart":16,"./pages/checkout":20,"./pages/compare":23,"./pages/product":27,"./pages/registry":32,"./pages/search":33,"./pages/storefront":34,"./pages/storelocator":35,"./pages/wishlist":36,"./rating":40,"./searchplaceholder":41,"./searchsuggest":42,"./tls":46,"./tooltip":47,"./util":48,"./validator":49}],3:[function(require,module,exports){
+},{"./captcha":4,"./consentTracking":6,"./cookieprivacy":7,"./countries":8,"./dialog":9,"./jquery-ext":12,"./minicart":14,"./page":15,"./pages/account":16,"./pages/cart":17,"./pages/checkout":21,"./pages/compare":24,"./pages/product":28,"./pages/registry":33,"./pages/search":34,"./pages/storefront":35,"./pages/storelocator":36,"./pages/wishlist":37,"./rating":41,"./searchplaceholder":42,"./searchsuggest":43,"./tls":47,"./tooltip":48,"./util":49,"./validator":50}],3:[function(require,module,exports){
 'use strict';
 
 var dialog = require('./dialog'),
@@ -664,7 +671,7 @@ var bonusProductsView = {
 
 module.exports = bonusProductsView;
 
-},{"./dialog":8,"./page":14,"./util":48}],4:[function(require,module,exports){
+},{"./dialog":9,"./page":15,"./util":49}],4:[function(require,module,exports){
 'use strict';
 
 var dialog = require('./dialog');
@@ -700,7 +707,7 @@ module.exports = function () {
     }
 };
 
-},{"./dialog":8,"./util":48}],5:[function(require,module,exports){
+},{"./dialog":9,"./util":49}],5:[function(require,module,exports){
 'use strict';
 
 var page = require('./page'),
@@ -955,7 +962,107 @@ exports.init = function () {
 exports.addProduct = addProduct;
 exports.removeProduct = removeProduct;
 
-},{"./page":14,"./util":48,"promise":55}],6:[function(require,module,exports){
+},{"./page":15,"./util":49,"promise":56}],6:[function(require,module,exports){
+'use strict';
+
+var dialog = require('./dialog');
+var util = require('./util');
+/**
+ * @function getConsent Used to display/control of the modal containing the consent management message
+ **/
+
+function getConsent() {
+    dialog.open({
+        url: Urls.consentTracking,
+        options: {
+            closeOnEscape: false,
+            dialogClass: 'no-close',
+            buttons: [{
+                text: Resources.TRACKING_CONSENT,
+                click: function () {
+                    $(this).dialog('close');
+                    $.ajax({
+                        type: 'GET',
+                        url: util.appendParamToURL(Urls.consentTrackingSetSession, 'consentTracking', true),
+                        success: function () {
+                            showPrivacyDialog();
+                        },
+                        error: function () {
+                            showPrivacyDialog();
+                        }
+                    })
+                }
+            }, {
+                text: Resources.TRACKING_NO_CONSENT,
+                click: function () {
+                    $(this).dialog('close');
+                    $.ajax({
+                        type: 'GET',
+                        url: util.appendParamToURL(Urls.consentTrackingSetSession, 'consentTracking', false),
+                        success: function () {
+                            showPrivacyDialog();
+                        },
+                        error: function () {
+                            showPrivacyDialog();
+                        }
+                    })
+                }
+            }]
+        }
+    });
+}
+
+function enablePrivacyCookies() {
+    if (document.cookie.indexOf('dw=1') < 0) {
+        document.cookie = 'dw=1; path=/';
+    }
+    if (document.cookie.indexOf('dw_cookies_accepted') < 0) {
+        document.cookie = 'dw_cookies_accepted=1; path=/';
+    }
+}
+function showPrivacyDialog(){
+
+    if (SitePreferences.COOKIE_HINT === true && document.cookie.indexOf('dw_cookies_accepted') < 0) {
+        // check for privacy policy page
+        if ($('.privacy-policy').length === 0) {
+            dialog.open({
+                url: Urls.cookieHint,
+                options: {
+                    closeOnEscape: false,
+                    dialogClass: 'no-close',
+                    buttons: [{
+                        text: Resources.I_AGREE,
+                        click: function () {
+                            $(this).dialog('close');
+                            enablePrivacyCookies();
+                        }
+                    }]
+                }
+            });
+        }
+    } else {
+        // Otherwise, we don't need to show the asset, just enable the cookies
+        enablePrivacyCookies();
+    }
+}
+var consentTracking = {
+    init: function () {
+        if (consent == null && SitePreferences.CONSENT_TRACKING_HINT) { // eslint-disable-line no-undef
+            getConsent();
+        }
+        
+        if (consent != null && SitePreferences.CONSENT_TRACKING_HINT){ // eslint-disable-line no-undef
+            showPrivacyDialog();
+        }
+        
+    },
+    show: function () {
+        getConsent();
+    }
+};
+module.exports = consentTracking;
+
+},{"./dialog":9,"./util":49}],7:[function(require,module,exports){
 'use strict';
 
 var dialog = require('./dialog');
@@ -968,7 +1075,7 @@ module.exports = function () {
      * If we have not accepted cookies AND we're not on the Privacy Policy page, then show the notification
      * NOTE: You will probably want to adjust the Privacy Page test to match your site's specific privacy / cookie page
      */
-    if (SitePreferences.COOKIE_HINT === true && document.cookie.indexOf('dw_cookies_accepted') < 0) {
+    if (!SitePreferences.CONSENT_TRACKING_HINT && SitePreferences.COOKIE_HINT === true && document.cookie.indexOf('dw_cookies_accepted') < 0) {
         // check for privacy policy page
         if ($('.privacy-policy').length === 0) {
             dialog.open({
@@ -1001,7 +1108,7 @@ module.exports = function () {
     }
 };
 
-},{"./dialog":8}],7:[function(require,module,exports){
+},{"./dialog":9}],8:[function(require,module,exports){
 'use strict';
 
 exports.init = function init () {
@@ -1031,7 +1138,7 @@ exports.init = function init () {
     });
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var ajax = require('./ajax'),
@@ -1177,7 +1284,7 @@ var dialog = {
 
 module.exports = dialog;
 
-},{"./ajax":1,"./util":48,"imagesloaded":53,"lodash":54}],9:[function(require,module,exports){
+},{"./ajax":1,"./util":49,"imagesloaded":54,"lodash":55}],10:[function(require,module,exports){
 'use strict';
 
 var ajax = require('./ajax'),
@@ -1198,7 +1305,7 @@ exports.checkBalance = function (id, callback) {
     });
 };
 
-},{"./ajax":1,"./util":48}],10:[function(require,module,exports){
+},{"./ajax":1,"./util":49}],11:[function(require,module,exports){
 'use strict';
 
 var ajax = require('./ajax'),
@@ -1250,7 +1357,7 @@ exports.init = function () {
     $('#AddToBasketButton').on('click', setAddToCartHandler);
 };
 
-},{"./ajax":1,"./minicart":13,"./util":48}],11:[function(require,module,exports){
+},{"./ajax":1,"./minicart":14,"./util":49}],12:[function(require,module,exports){
 'use strict';
 // jQuery extensions
 
@@ -1280,7 +1387,7 @@ module.exports = function () {
     };
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 var dialog = require('./dialog'),
@@ -1337,7 +1444,7 @@ var login = {
                                 success: function (response) {
                                     if (typeof response === 'object' &&
                                             !response.success &&
-                                            response.error === 'CSRF Token Mismatch') {
+                                            response.error === Resources.CSRF_TOKEN_MISMATCH) {
                                         page.redirect(Urls.csrffailed);
                                     } else if (typeof response === 'string') {
                                         dialog.$container.html(response);
@@ -1357,7 +1464,7 @@ var login = {
 
 module.exports = login;
 
-},{"./dialog":8,"./page":14,"./validator":49}],13:[function(require,module,exports){
+},{"./dialog":9,"./page":15,"./validator":50}],14:[function(require,module,exports){
 'use strict';
 
 var util = require('./util'),
@@ -1440,7 +1547,7 @@ var minicart = {
 
 module.exports = minicart;
 
-},{"./bonus-products-view":3,"./util":48}],14:[function(require,module,exports){
+},{"./bonus-products-view":3,"./util":49}],15:[function(require,module,exports){
 'use strict';
 
 var util = require('./util');
@@ -1463,7 +1570,7 @@ var page = {
 
 module.exports = page;
 
-},{"./util":48}],15:[function(require,module,exports){
+},{"./util":49}],16:[function(require,module,exports){
 'use strict';
 
 var giftcert = require('../giftcert'),
@@ -1672,7 +1779,7 @@ var account = {
 
 module.exports = account;
 
-},{"../dialog":8,"../giftcert":10,"../login":12,"../page":14,"../tooltip":47,"../util":48,"../validator":49}],16:[function(require,module,exports){
+},{"../dialog":9,"../giftcert":11,"../login":13,"../page":15,"../tooltip":48,"../util":49,"../validator":50}],17:[function(require,module,exports){
 'use strict';
 
 var account = require('./account'),
@@ -1722,7 +1829,7 @@ exports.init = function () {
     account.initCartLogin();
 };
 
-},{"../bonus-products-view":3,"../quickview":39,"../storeinventory/cart":43,"./account":15}],17:[function(require,module,exports){
+},{"../bonus-products-view":3,"../quickview":40,"../storeinventory/cart":44,"./account":16}],18:[function(require,module,exports){
 'use strict';
 
 var util = require('../../util');
@@ -1746,7 +1853,7 @@ exports.init = function () {
     });
 };
 
-},{"../../util":48,"./shipping":22}],18:[function(require,module,exports){
+},{"../../util":49,"./shipping":23}],19:[function(require,module,exports){
 'use strict';
 
 var ajax = require('../../ajax'),
@@ -1944,7 +2051,7 @@ exports.init = function () {
     });
 };
 
-},{"../../ajax":1,"../../giftcard":9,"../../util":48,"./formPrepare":19}],19:[function(require,module,exports){
+},{"../../ajax":1,"../../giftcard":10,"../../util":49,"./formPrepare":20}],20:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2006,7 +2113,7 @@ exports.init = init;
 exports.validateForm = validateForm;
 exports.validateEl = validateEl;
 
-},{"lodash":54}],20:[function(require,module,exports){
+},{"lodash":55}],21:[function(require,module,exports){
 'use strict';
 
 var address = require('./address'),
@@ -2035,7 +2142,7 @@ exports.init = function () {
     }
 };
 
-},{"./address":17,"./billing":18,"./multiship":21,"./shipping":22}],21:[function(require,module,exports){
+},{"./address":18,"./billing":19,"./multiship":22,"./shipping":23}],22:[function(require,module,exports){
 'use strict';
 
 var address = require('./address'),
@@ -2180,7 +2287,7 @@ exports.init = function () {
     });
 };
 
-},{"../../dialog":8,"../../util":48,"../../validator":49,"./address":17,"./formPrepare":19}],22:[function(require,module,exports){
+},{"../../dialog":9,"../../util":49,"../../validator":50,"./address":18,"./formPrepare":20}],23:[function(require,module,exports){
 'use strict';
 
 var ajax = require('../../ajax'),
@@ -2342,7 +2449,7 @@ exports.init = function () {
 
 exports.updateShippingMethodList = updateShippingMethodList;
 
-},{"../../ajax":1,"../../progress":38,"../../tooltip":47,"../../util":48,"./formPrepare":19}],23:[function(require,module,exports){
+},{"../../ajax":1,"../../progress":39,"../../tooltip":48,"../../util":49,"./formPrepare":20}],24:[function(require,module,exports){
 'use strict';
 
 var addProductToCart = require('./product/addToCart'),
@@ -2386,7 +2493,7 @@ exports.init = function () {
     addProductToCart();
 };
 
-},{"../ajax":1,"../page":14,"../product-tile":37,"../quickview":39,"./product/addToCart":24}],24:[function(require,module,exports){
+},{"../ajax":1,"../page":15,"../product-tile":38,"../quickview":40,"./product/addToCart":25}],25:[function(require,module,exports){
 'use strict';
 
 var dialog = require('../../dialog'),
@@ -2467,7 +2574,7 @@ module.exports = function () {
     $('#add-all-to-cart').on('click', addAllToCart);
 };
 
-},{"../../dialog":8,"../../minicart":13,"../../page":14,"../../util":48,"lodash":54,"promise":55}],25:[function(require,module,exports){
+},{"../../dialog":9,"../../minicart":14,"../../page":15,"../../util":49,"lodash":55,"promise":56}],26:[function(require,module,exports){
 'use strict';
 
 var ajax =  require('../../ajax'),
@@ -2535,7 +2642,7 @@ module.exports = function () {
     $('#pdpMain').on('change', '.pdpForm input[name="Quantity"]', getAvailability);
 };
 
-},{"../../ajax":1,"../../util":48}],26:[function(require,module,exports){
+},{"../../ajax":1,"../../util":49}],27:[function(require,module,exports){
 'use strict';
 var dialog = require('../../dialog');
 var util = require('../../util');
@@ -2647,7 +2754,7 @@ module.exports.loadZoom = loadZoom;
 module.exports.setMainImage = setMainImage;
 module.exports.replaceImages = replaceImages;
 
-},{"../../dialog":8,"../../util":48,"lodash":54,"qs":65,"url":72}],27:[function(require,module,exports){
+},{"../../dialog":9,"../../util":49,"lodash":55,"qs":66,"url":73}],28:[function(require,module,exports){
 'use strict';
 
 var dialog = require('../../dialog'),
@@ -2726,7 +2833,7 @@ var product = {
 
 module.exports = product;
 
-},{"../../dialog":8,"../../storeinventory/product":45,"../../tooltip":47,"../../util":48,"./addToCart":24,"./availability":25,"./image":26,"./productNav":28,"./productSet":29,"./recommendations":30,"./variant":31}],28:[function(require,module,exports){
+},{"../../dialog":9,"../../storeinventory/product":46,"../../tooltip":48,"../../util":49,"./addToCart":25,"./availability":26,"./image":27,"./productNav":29,"./productSet":30,"./recommendations":31,"./variant":32}],29:[function(require,module,exports){
 'use strict';
 
 var ajax = require('../../ajax'),
@@ -2753,7 +2860,7 @@ module.exports = function () {
     });
 };
 
-},{"../../ajax":1,"../../util":48}],29:[function(require,module,exports){
+},{"../../ajax":1,"../../util":49}],30:[function(require,module,exports){
 'use strict';
 
 var ajax = require('../../ajax'),
@@ -2798,7 +2905,7 @@ module.exports = function () {
     });
 };
 
-},{"../../ajax":1,"../../tooltip":47,"../../util":48}],30:[function(require,module,exports){
+},{"../../ajax":1,"../../tooltip":48,"../../util":49}],31:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2833,7 +2940,7 @@ module.exports = function () {
         });
 };
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 var ajax = require('../../ajax'),
@@ -2906,7 +3013,7 @@ module.exports = function () {
     });
 };
 
-},{"../../ajax":1,"../../progress":38,"../../storeinventory/product":45,"../../tooltip":47,"../../util":48,"./image":26}],32:[function(require,module,exports){
+},{"../../ajax":1,"../../progress":39,"../../storeinventory/product":46,"../../tooltip":48,"../../util":49,"./image":27}],33:[function(require,module,exports){
 'use strict';
 
 var addProductToCart = require('./product/addToCart'),
@@ -2993,7 +3100,7 @@ exports.init = function () {
     util.setDeleteConfirmation('.item-list', String.format(Resources.CONFIRM_DELETE, Resources.TITLE_GIFTREGISTRY));
 };
 
-},{"../ajax":1,"../login":12,"../quickview":39,"../util":48,"./product/addToCart":24}],33:[function(require,module,exports){
+},{"../ajax":1,"../login":13,"../quickview":40,"../util":49,"./product/addToCart":25}],34:[function(require,module,exports){
 'use strict';
 
 var compareWidget = require('../compare-widget'),
@@ -3154,7 +3261,7 @@ exports.init = function () {
     initializeEvents();
 };
 
-},{"../compare-widget":5,"../product-tile":37,"../progress":38,"../util":48}],34:[function(require,module,exports){
+},{"../compare-widget":5,"../product-tile":38,"../progress":39,"../util":49}],35:[function(require,module,exports){
 'use strict';
 exports.init = function () {
     $('#homepage-slider')
@@ -3213,7 +3320,7 @@ exports.init = function () {
         });
 };
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 var dialog = require('../dialog');
 
@@ -3226,7 +3333,7 @@ exports.init = function () {
     });
 };
 
-},{"../dialog":8}],36:[function(require,module,exports){
+},{"../dialog":9}],37:[function(require,module,exports){
 'use strict';
 
 var addProductToCart = require('./product/addToCart'),
@@ -3249,7 +3356,7 @@ exports.init = function () {
 
 };
 
-},{"../login":12,"../page":14,"../util":48,"./product/addToCart":24}],37:[function(require,module,exports){
+},{"../login":13,"../page":15,"../util":49,"./product/addToCart":25}],38:[function(require,module,exports){
 'use strict';
 
 var imagesLoaded = require('imagesloaded'),
@@ -3361,7 +3468,7 @@ exports.init = function () {
     initializeEvents();
 };
 
-},{"./quickview":39,"imagesloaded":53}],38:[function(require,module,exports){
+},{"./quickview":40,"imagesloaded":54}],39:[function(require,module,exports){
 'use strict';
 
 var $loader;
@@ -3394,7 +3501,7 @@ var hide = function () {
 exports.show = show;
 exports.hide = hide;
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 'use strict';
 
 var dialog = require('./dialog'),
@@ -3513,7 +3620,7 @@ var quickview = {
 
 module.exports = quickview;
 
-},{"./dialog":8,"./pages/product":27,"./util":48,"lodash":54}],40:[function(require,module,exports){
+},{"./dialog":9,"./pages/product":28,"./util":49,"lodash":55}],41:[function(require,module,exports){
 'use strict';
 
 /**
@@ -3569,7 +3676,7 @@ module.exports = {
     }
 };
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 
 /**
@@ -3595,7 +3702,7 @@ function initializeEvents() {
 
 exports.init = initializeEvents;
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 
 var util = require('./util');
@@ -3767,7 +3874,7 @@ var searchsuggest = {
 
 module.exports = searchsuggest;
 
-},{"./util":48}],43:[function(require,module,exports){
+},{"./util":49}],44:[function(require,module,exports){
 'use strict';
 
 var inventory = require('./');
@@ -3855,7 +3962,7 @@ var cartInventory = {
 
 module.exports = cartInventory;
 
-},{"./":44}],44:[function(require,module,exports){
+},{"./":45}],45:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash'),
@@ -4037,7 +4144,7 @@ var storeinventory = {
 
 module.exports = storeinventory;
 
-},{"../dialog":8,"../util":48,"lodash":54,"promise":55}],45:[function(require,module,exports){
+},{"../dialog":9,"../util":49,"lodash":55,"promise":56}],46:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash'),
@@ -4133,7 +4240,7 @@ var productInventory = {
 
 module.exports = productInventory;
 
-},{"./":44,"lodash":54}],46:[function(require,module,exports){
+},{"./":45,"lodash":55}],47:[function(require,module,exports){
 'use strict';
 
 /**
@@ -4267,7 +4374,7 @@ function setCookie (key, value, minutes) {
 
 exports.getUserAgent = getUserAgent;
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 'use strict';
 
 /**
@@ -4293,7 +4400,7 @@ exports.init = function () {
     });
 };
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -4565,7 +4672,7 @@ var util = {
 
 module.exports = util;
 
-},{"lodash":54}],49:[function(require,module,exports){
+},{"lodash":55}],50:[function(require,module,exports){
 'use strict';
 
 var naPhone = /^\(?([2-9][0-8][0-9])\)?[\-\. ]?([2-9][0-9]{2})[\-\. ]?([0-9]{4})(\s*x[0-9]+)?$/;
@@ -4697,7 +4804,7 @@ var validator = {
 
 module.exports = validator;
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -4765,7 +4872,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":51}],51:[function(require,module,exports){
+},{"./raw":52}],52:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -4992,7 +5099,7 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 /*!
  * eventie v1.0.6
  * event binding helper
@@ -5076,7 +5183,7 @@ if ( typeof define === 'function' && define.amd ) {
 
 })( window );
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 /*!
  * imagesLoaded v3.2.0
  * JavaScript is all like "You images are done yet or what?"
@@ -5462,7 +5569,7 @@ function makeArray( obj ) {
 
 });
 
-},{"eventie":52,"wolfy87-eventemitter":74}],54:[function(require,module,exports){
+},{"eventie":53,"wolfy87-eventemitter":75}],55:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -17817,12 +17924,12 @@ function makeArray( obj ) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib')
 
-},{"./lib":60}],56:[function(require,module,exports){
+},{"./lib":61}],57:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -17881,17 +17988,17 @@ function Promise(fn) {
     throw new TypeError('Promises must be constructed via new');
   }
   if (typeof fn !== 'function') {
-    throw new TypeError('not a function');
+    throw new TypeError('Promise constructor\'s argument is not a function');
   }
-  this._45 = 0;
-  this._81 = 0;
-  this._65 = null;
-  this._54 = null;
+  this._40 = 0;
+  this._65 = 0;
+  this._55 = null;
+  this._72 = null;
   if (fn === noop) return;
   doResolve(fn, this);
 }
-Promise._10 = null;
-Promise._97 = null;
+Promise._37 = null;
+Promise._87 = null;
 Promise._61 = noop;
 
 Promise.prototype.then = function(onFulfilled, onRejected) {
@@ -17909,26 +18016,26 @@ function safeThen(self, onFulfilled, onRejected) {
     res.then(resolve, reject);
     handle(self, new Handler(onFulfilled, onRejected, res));
   });
-};
+}
 function handle(self, deferred) {
-  while (self._81 === 3) {
-    self = self._65;
+  while (self._65 === 3) {
+    self = self._55;
   }
-  if (Promise._10) {
-    Promise._10(self);
+  if (Promise._37) {
+    Promise._37(self);
   }
-  if (self._81 === 0) {
-    if (self._45 === 0) {
-      self._45 = 1;
-      self._54 = deferred;
+  if (self._65 === 0) {
+    if (self._40 === 0) {
+      self._40 = 1;
+      self._72 = deferred;
       return;
     }
-    if (self._45 === 1) {
-      self._45 = 2;
-      self._54 = [self._54, deferred];
+    if (self._40 === 1) {
+      self._40 = 2;
+      self._72 = [self._72, deferred];
       return;
     }
-    self._54.push(deferred);
+    self._72.push(deferred);
     return;
   }
   handleResolved(self, deferred);
@@ -17936,16 +18043,16 @@ function handle(self, deferred) {
 
 function handleResolved(self, deferred) {
   asap(function() {
-    var cb = self._81 === 1 ? deferred.onFulfilled : deferred.onRejected;
+    var cb = self._65 === 1 ? deferred.onFulfilled : deferred.onRejected;
     if (cb === null) {
-      if (self._81 === 1) {
-        resolve(deferred.promise, self._65);
+      if (self._65 === 1) {
+        resolve(deferred.promise, self._55);
       } else {
-        reject(deferred.promise, self._65);
+        reject(deferred.promise, self._55);
       }
       return;
     }
-    var ret = tryCallOne(cb, self._65);
+    var ret = tryCallOne(cb, self._55);
     if (ret === IS_ERROR) {
       reject(deferred.promise, LAST_ERROR);
     } else {
@@ -17973,8 +18080,8 @@ function resolve(self, newValue) {
       then === self.then &&
       newValue instanceof Promise
     ) {
-      self._81 = 3;
-      self._65 = newValue;
+      self._65 = 3;
+      self._55 = newValue;
       finale(self);
       return;
     } else if (typeof then === 'function') {
@@ -17982,29 +18089,29 @@ function resolve(self, newValue) {
       return;
     }
   }
-  self._81 = 1;
-  self._65 = newValue;
+  self._65 = 1;
+  self._55 = newValue;
   finale(self);
 }
 
 function reject(self, newValue) {
-  self._81 = 2;
-  self._65 = newValue;
-  if (Promise._97) {
-    Promise._97(self, newValue);
+  self._65 = 2;
+  self._55 = newValue;
+  if (Promise._87) {
+    Promise._87(self, newValue);
   }
   finale(self);
 }
 function finale(self) {
-  if (self._45 === 1) {
-    handle(self, self._54);
-    self._54 = null;
+  if (self._40 === 1) {
+    handle(self, self._72);
+    self._72 = null;
   }
-  if (self._45 === 2) {
-    for (var i = 0; i < self._54.length; i++) {
-      handle(self, self._54[i]);
+  if (self._40 === 2) {
+    for (var i = 0; i < self._72.length; i++) {
+      handle(self, self._72[i]);
     }
-    self._54 = null;
+    self._72 = null;
   }
 }
 
@@ -18030,14 +18137,14 @@ function doResolve(fn, promise) {
     if (done) return;
     done = true;
     reject(promise, reason);
-  })
+  });
   if (!done && res === IS_ERROR) {
     done = true;
     reject(promise, LAST_ERROR);
   }
 }
 
-},{"asap/raw":51}],57:[function(require,module,exports){
+},{"asap/raw":52}],58:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -18052,7 +18159,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
   });
 };
 
-},{"./core.js":56}],58:[function(require,module,exports){
+},{"./core.js":57}],59:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -18072,8 +18179,8 @@ var EMPTYSTRING = valuePromise('');
 
 function valuePromise(value) {
   var p = new Promise(Promise._61);
-  p._81 = 1;
-  p._65 = value;
+  p._65 = 1;
+  p._55 = value;
   return p;
 }
 Promise.resolve = function (value) {
@@ -18110,11 +18217,11 @@ Promise.all = function (arr) {
     function res(i, val) {
       if (val && (typeof val === 'object' || typeof val === 'function')) {
         if (val instanceof Promise && val.then === Promise.prototype.then) {
-          while (val._81 === 3) {
-            val = val._65;
+          while (val._65 === 3) {
+            val = val._55;
           }
-          if (val._81 === 1) return res(i, val._65);
-          if (val._81 === 2) reject(val._65);
+          if (val._65 === 1) return res(i, val._55);
+          if (val._65 === 2) reject(val._55);
           val.then(function (val) {
             res(i, val);
           }, reject);
@@ -18161,7 +18268,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":56}],59:[function(require,module,exports){
+},{"./core.js":57}],60:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -18179,7 +18286,7 @@ Promise.prototype['finally'] = function (f) {
   });
 };
 
-},{"./core.js":56}],60:[function(require,module,exports){
+},{"./core.js":57}],61:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./core.js');
@@ -18189,7 +18296,7 @@ require('./es6-extensions.js');
 require('./node-extensions.js');
 require('./synchronous.js');
 
-},{"./core.js":56,"./done.js":57,"./es6-extensions.js":58,"./finally.js":59,"./node-extensions.js":61,"./synchronous.js":62}],61:[function(require,module,exports){
+},{"./core.js":57,"./done.js":58,"./es6-extensions.js":59,"./finally.js":60,"./node-extensions.js":62,"./synchronous.js":63}],62:[function(require,module,exports){
 'use strict';
 
 // This file contains then/promise specific extensions that are only useful
@@ -18210,7 +18317,7 @@ Promise.denodeify = function (fn, argumentCount) {
   } else {
     return denodeifyWithoutCount(fn);
   }
-}
+};
 
 var callbackFn = (
   'function (err, res) {' +
@@ -18305,7 +18412,7 @@ Promise.nodeify = function (fn) {
       }
     }
   }
-}
+};
 
 Promise.prototype.nodeify = function (callback, ctx) {
   if (typeof callback != 'function') return this;
@@ -18319,9 +18426,9 @@ Promise.prototype.nodeify = function (callback, ctx) {
       callback.call(ctx, err);
     });
   });
-}
+};
 
-},{"./core.js":56,"asap":50}],62:[function(require,module,exports){
+},{"./core.js":57,"asap":51}],63:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -18341,38 +18448,38 @@ Promise.enableSynchronous = function () {
   };
 
   Promise.prototype.getValue = function () {
-    if (this._81 === 3) {
-      return this._65.getValue();
+    if (this._65 === 3) {
+      return this._55.getValue();
     }
 
     if (!this.isFulfilled()) {
       throw new Error('Cannot get a value of an unfulfilled promise.');
     }
 
-    return this._65;
+    return this._55;
   };
 
   Promise.prototype.getReason = function () {
-    if (this._81 === 3) {
-      return this._65.getReason();
+    if (this._65 === 3) {
+      return this._55.getReason();
     }
 
     if (!this.isRejected()) {
       throw new Error('Cannot get a rejection reason of a non-rejected promise.');
     }
 
-    return this._65;
+    return this._55;
   };
 
   Promise.prototype.getState = function () {
-    if (this._81 === 3) {
-      return this._65.getState();
+    if (this._65 === 3) {
+      return this._55.getState();
     }
-    if (this._81 === -1 || this._81 === -2) {
+    if (this._65 === -1 || this._65 === -2) {
       return 0;
     }
 
-    return this._81;
+    return this._65;
   };
 };
 
@@ -18385,7 +18492,7 @@ Promise.disableSynchronous = function() {
   Promise.prototype.getState = undefined;
 };
 
-},{"./core.js":56}],63:[function(require,module,exports){
+},{"./core.js":57}],64:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.4.1 by @mathias */
 ;(function(root) {
@@ -18922,7 +19029,7 @@ Promise.disableSynchronous = function() {
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 'use strict';
 
 var replace = String.prototype.replace;
@@ -18942,7 +19049,7 @@ module.exports = {
     RFC3986: 'RFC3986'
 };
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 'use strict';
 
 var stringify = require('./stringify');
@@ -18955,7 +19062,7 @@ module.exports = {
     stringify: stringify
 };
 
-},{"./formats":64,"./parse":66,"./stringify":67}],66:[function(require,module,exports){
+},{"./formats":65,"./parse":67,"./stringify":68}],67:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -18976,19 +19083,23 @@ var defaults = {
 
 var parseValues = function parseQueryStringValues(str, options) {
     var obj = {};
-    var parts = str.split(options.delimiter, options.parameterLimit === Infinity ? undefined : options.parameterLimit);
+    var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, '') : str;
+    var limit = options.parameterLimit === Infinity ? undefined : options.parameterLimit;
+    var parts = cleanStr.split(options.delimiter, limit);
 
     for (var i = 0; i < parts.length; ++i) {
         var part = parts[i];
-        var pos = part.indexOf(']=') === -1 ? part.indexOf('=') : part.indexOf(']=') + 1;
+
+        var bracketEqualsPos = part.indexOf(']=');
+        var pos = bracketEqualsPos === -1 ? part.indexOf('=') : bracketEqualsPos + 1;
 
         var key, val;
         if (pos === -1) {
-            key = options.decoder(part);
+            key = options.decoder(part, defaults.decoder);
             val = options.strictNullHandling ? null : '';
         } else {
-            key = options.decoder(part.slice(0, pos));
-            val = options.decoder(part.slice(pos + 1));
+            key = options.decoder(part.slice(0, pos), defaults.decoder);
+            val = options.decoder(part.slice(pos + 1), defaults.decoder);
         }
         if (has.call(obj, key)) {
             obj[key] = [].concat(obj[key]).concat(val);
@@ -19000,36 +19111,38 @@ var parseValues = function parseQueryStringValues(str, options) {
     return obj;
 };
 
-var parseObject = function parseObjectRecursive(chain, val, options) {
-    if (!chain.length) {
-        return val;
-    }
+var parseObject = function (chain, val, options) {
+    var leaf = val;
 
-    var root = chain.shift();
+    for (var i = chain.length - 1; i >= 0; --i) {
+        var obj;
+        var root = chain[i];
 
-    var obj;
-    if (root === '[]') {
-        obj = [];
-        obj = obj.concat(parseObject(chain, val, options));
-    } else {
-        obj = options.plainObjects ? Object.create(null) : {};
-        var cleanRoot = root.charAt(0) === '[' && root.charAt(root.length - 1) === ']' ? root.slice(1, -1) : root;
-        var index = parseInt(cleanRoot, 10);
-        if (
-            !isNaN(index) &&
-            root !== cleanRoot &&
-            String(index) === cleanRoot &&
-            index >= 0 &&
-            (options.parseArrays && index <= options.arrayLimit)
-        ) {
+        if (root === '[]') {
             obj = [];
-            obj[index] = parseObject(chain, val, options);
+            obj = obj.concat(leaf);
         } else {
-            obj[cleanRoot] = parseObject(chain, val, options);
+            obj = options.plainObjects ? Object.create(null) : {};
+            var cleanRoot = root.charAt(0) === '[' && root.charAt(root.length - 1) === ']' ? root.slice(1, -1) : root;
+            var index = parseInt(cleanRoot, 10);
+            if (
+                !isNaN(index)
+                && root !== cleanRoot
+                && String(index) === cleanRoot
+                && index >= 0
+                && (options.parseArrays && index <= options.arrayLimit)
+            ) {
+                obj = [];
+                obj[index] = leaf;
+            } else {
+                obj[cleanRoot] = leaf;
+            }
         }
+
+        leaf = obj;
     }
 
-    return obj;
+    return leaf;
 };
 
 var parseKeys = function parseQueryStringKeys(givenKey, val, options) {
@@ -19042,26 +19155,27 @@ var parseKeys = function parseQueryStringKeys(givenKey, val, options) {
 
     // The regex chunks
 
-    var parent = /^([^[]*)/;
+    var brackets = /(\[[^[\]]*])/;
     var child = /(\[[^[\]]*])/g;
 
     // Get the parent
 
-    var segment = parent.exec(key);
+    var segment = brackets.exec(key);
+    var parent = segment ? key.slice(0, segment.index) : key;
 
     // Stash the parent if it exists
 
     var keys = [];
-    if (segment[1]) {
+    if (parent) {
         // If we aren't using plain objects, optionally prefix keys
         // that would overwrite object prototype properties
-        if (!options.plainObjects && has.call(Object.prototype, segment[1])) {
+        if (!options.plainObjects && has.call(Object.prototype, parent)) {
             if (!options.allowPrototypes) {
                 return;
             }
         }
 
-        keys.push(segment[1]);
+        keys.push(parent);
     }
 
     // Loop through children appending to the array until we hit depth
@@ -19087,12 +19201,13 @@ var parseKeys = function parseQueryStringKeys(givenKey, val, options) {
 };
 
 module.exports = function (str, opts) {
-    var options = opts || {};
+    var options = opts ? utils.assign({}, opts) : {};
 
     if (options.decoder !== null && options.decoder !== undefined && typeof options.decoder !== 'function') {
         throw new TypeError('Decoder has to be a function.');
     }
 
+    options.ignoreQueryPrefix = options.ignoreQueryPrefix === true;
     options.delimiter = typeof options.delimiter === 'string' || utils.isRegExp(options.delimiter) ? options.delimiter : defaults.delimiter;
     options.depth = typeof options.depth === 'number' ? options.depth : defaults.depth;
     options.arrayLimit = typeof options.arrayLimit === 'number' ? options.arrayLimit : defaults.arrayLimit;
@@ -19123,7 +19238,7 @@ module.exports = function (str, opts) {
     return utils.compact(obj);
 };
 
-},{"./utils":68}],67:[function(require,module,exports){
+},{"./utils":69}],68:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -19147,6 +19262,7 @@ var defaults = {
     delimiter: '&',
     encode: true,
     encoder: utils.encode,
+    encodeValuesOnly: false,
     serializeDate: function serializeDate(date) { // eslint-disable-line func-name-matching
         return toISO.call(date);
     },
@@ -19165,7 +19281,8 @@ var stringify = function stringify( // eslint-disable-line func-name-matching
     sort,
     allowDots,
     serializeDate,
-    formatter
+    formatter,
+    encodeValuesOnly
 ) {
     var obj = object;
     if (typeof filter === 'function') {
@@ -19174,7 +19291,7 @@ var stringify = function stringify( // eslint-disable-line func-name-matching
         obj = serializeDate(obj);
     } else if (obj === null) {
         if (strictNullHandling) {
-            return encoder ? encoder(prefix) : prefix;
+            return encoder && !encodeValuesOnly ? encoder(prefix, defaults.encoder) : prefix;
         }
 
         obj = '';
@@ -19182,7 +19299,8 @@ var stringify = function stringify( // eslint-disable-line func-name-matching
 
     if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || utils.isBuffer(obj)) {
         if (encoder) {
-            return [formatter(encoder(prefix)) + '=' + formatter(encoder(obj))];
+            var keyValue = encodeValuesOnly ? prefix : encoder(prefix, defaults.encoder);
+            return [formatter(keyValue) + '=' + formatter(encoder(obj, defaults.encoder))];
         }
         return [formatter(prefix) + '=' + formatter(String(obj))];
     }
@@ -19220,7 +19338,8 @@ var stringify = function stringify( // eslint-disable-line func-name-matching
                 sort,
                 allowDots,
                 serializeDate,
-                formatter
+                formatter,
+                encodeValuesOnly
             ));
         } else {
             values = values.concat(stringify(
@@ -19234,7 +19353,8 @@ var stringify = function stringify( // eslint-disable-line func-name-matching
                 sort,
                 allowDots,
                 serializeDate,
-                formatter
+                formatter,
+                encodeValuesOnly
             ));
         }
     }
@@ -19244,7 +19364,7 @@ var stringify = function stringify( // eslint-disable-line func-name-matching
 
 module.exports = function (object, opts) {
     var obj = object;
-    var options = opts || {};
+    var options = opts ? utils.assign({}, opts) : {};
 
     if (options.encoder !== null && options.encoder !== undefined && typeof options.encoder !== 'function') {
         throw new TypeError('Encoder has to be a function.');
@@ -19254,12 +19374,13 @@ module.exports = function (object, opts) {
     var strictNullHandling = typeof options.strictNullHandling === 'boolean' ? options.strictNullHandling : defaults.strictNullHandling;
     var skipNulls = typeof options.skipNulls === 'boolean' ? options.skipNulls : defaults.skipNulls;
     var encode = typeof options.encode === 'boolean' ? options.encode : defaults.encode;
-    var encoder = encode ? (typeof options.encoder === 'function' ? options.encoder : defaults.encoder) : null;
+    var encoder = typeof options.encoder === 'function' ? options.encoder : defaults.encoder;
     var sort = typeof options.sort === 'function' ? options.sort : null;
     var allowDots = typeof options.allowDots === 'undefined' ? false : options.allowDots;
     var serializeDate = typeof options.serializeDate === 'function' ? options.serializeDate : defaults.serializeDate;
+    var encodeValuesOnly = typeof options.encodeValuesOnly === 'boolean' ? options.encodeValuesOnly : defaults.encodeValuesOnly;
     if (typeof options.format === 'undefined') {
-        options.format = formats.default;
+        options.format = formats['default'];
     } else if (!Object.prototype.hasOwnProperty.call(formats.formatters, options.format)) {
         throw new TypeError('Unknown format option provided.');
     }
@@ -19313,19 +19434,23 @@ module.exports = function (object, opts) {
             generateArrayPrefix,
             strictNullHandling,
             skipNulls,
-            encoder,
+            encode ? encoder : null,
             filter,
             sort,
             allowDots,
             serializeDate,
-            formatter
+            formatter,
+            encodeValuesOnly
         ));
     }
 
-    return keys.join(delimiter);
+    var joined = keys.join(delimiter);
+    var prefix = options.addQueryPrefix === true ? '?' : '';
+
+    return joined.length > 0 ? prefix + joined : '';
 };
 
-},{"./formats":64,"./utils":68}],68:[function(require,module,exports){
+},{"./formats":65,"./utils":69}],69:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty;
@@ -19339,7 +19464,30 @@ var hexTable = (function () {
     return array;
 }());
 
-exports.arrayToObject = function (source, options) {
+var compactQueue = function compactQueue(queue) {
+    var obj;
+
+    while (queue.length) {
+        var item = queue.pop();
+        obj = item.obj[item.prop];
+
+        if (Array.isArray(obj)) {
+            var compacted = [];
+
+            for (var j = 0; j < obj.length; ++j) {
+                if (typeof obj[j] !== 'undefined') {
+                    compacted.push(obj[j]);
+                }
+            }
+
+            item.obj[item.prop] = compacted;
+        }
+    }
+
+    return obj;
+};
+
+exports.arrayToObject = function arrayToObject(source, options) {
     var obj = options && options.plainObjects ? Object.create(null) : {};
     for (var i = 0; i < source.length; ++i) {
         if (typeof source[i] !== 'undefined') {
@@ -19350,7 +19498,7 @@ exports.arrayToObject = function (source, options) {
     return obj;
 };
 
-exports.merge = function (target, source, options) {
+exports.merge = function merge(target, source, options) {
     if (!source) {
         return target;
     }
@@ -19359,7 +19507,9 @@ exports.merge = function (target, source, options) {
         if (Array.isArray(target)) {
             target.push(source);
         } else if (typeof target === 'object') {
-            target[source] = true;
+            if (options.plainObjects || options.allowPrototypes || !has.call(Object.prototype, source)) {
+                target[source] = true;
+            }
         } else {
             return [target, source];
         }
@@ -19394,13 +19544,20 @@ exports.merge = function (target, source, options) {
     return Object.keys(source).reduce(function (acc, key) {
         var value = source[key];
 
-        if (Object.prototype.hasOwnProperty.call(acc, key)) {
+        if (has.call(acc, key)) {
             acc[key] = exports.merge(acc[key], value, options);
         } else {
             acc[key] = value;
         }
         return acc;
     }, mergeTarget);
+};
+
+exports.assign = function assignSingleSource(target, source) {
+    return Object.keys(source).reduce(function (acc, key) {
+        acc[key] = source[key];
+        return acc;
+    }, target);
 };
 
 exports.decode = function (str) {
@@ -19411,7 +19568,7 @@ exports.decode = function (str) {
     }
 };
 
-exports.encode = function (str) {
+exports.encode = function encode(str) {
     // This code was originally written by Brian White (mscdex) for the io.js core querystring library.
     // It has been adapted here for stricter adherence to RFC 3986
     if (str.length === 0) {
@@ -19425,13 +19582,13 @@ exports.encode = function (str) {
         var c = string.charCodeAt(i);
 
         if (
-            c === 0x2D || // -
-            c === 0x2E || // .
-            c === 0x5F || // _
-            c === 0x7E || // ~
-            (c >= 0x30 && c <= 0x39) || // 0-9
-            (c >= 0x41 && c <= 0x5A) || // a-z
-            (c >= 0x61 && c <= 0x7A) // A-Z
+            c === 0x2D // -
+            || c === 0x2E // .
+            || c === 0x5F // _
+            || c === 0x7E // ~
+            || (c >= 0x30 && c <= 0x39) // 0-9
+            || (c >= 0x41 && c <= 0x5A) // a-z
+            || (c >= 0x61 && c <= 0x7A) // A-Z
         ) {
             out += string.charAt(i);
             continue;
@@ -19454,52 +19611,42 @@ exports.encode = function (str) {
 
         i += 1;
         c = 0x10000 + (((c & 0x3FF) << 10) | (string.charCodeAt(i) & 0x3FF));
-        out += hexTable[0xF0 | (c >> 18)] + hexTable[0x80 | ((c >> 12) & 0x3F)] + hexTable[0x80 | ((c >> 6) & 0x3F)] + hexTable[0x80 | (c & 0x3F)]; // eslint-disable-line max-len
+        out += hexTable[0xF0 | (c >> 18)]
+            + hexTable[0x80 | ((c >> 12) & 0x3F)]
+            + hexTable[0x80 | ((c >> 6) & 0x3F)]
+            + hexTable[0x80 | (c & 0x3F)];
     }
 
     return out;
 };
 
-exports.compact = function (obj, references) {
-    if (typeof obj !== 'object' || obj === null) {
-        return obj;
-    }
+exports.compact = function compact(value) {
+    var queue = [{ obj: { o: value }, prop: 'o' }];
+    var refs = [];
 
-    var refs = references || [];
-    var lookup = refs.indexOf(obj);
-    if (lookup !== -1) {
-        return refs[lookup];
-    }
+    for (var i = 0; i < queue.length; ++i) {
+        var item = queue[i];
+        var obj = item.obj[item.prop];
 
-    refs.push(obj);
-
-    if (Array.isArray(obj)) {
-        var compacted = [];
-
-        for (var i = 0; i < obj.length; ++i) {
-            if (obj[i] && typeof obj[i] === 'object') {
-                compacted.push(exports.compact(obj[i], refs));
-            } else if (typeof obj[i] !== 'undefined') {
-                compacted.push(obj[i]);
+        var keys = Object.keys(obj);
+        for (var j = 0; j < keys.length; ++j) {
+            var key = keys[j];
+            var val = obj[key];
+            if (typeof val === 'object' && val !== null && refs.indexOf(val) === -1) {
+                queue.push({ obj: obj, prop: key });
+                refs.push(val);
             }
         }
-
-        return compacted;
     }
 
-    var keys = Object.keys(obj);
-    keys.forEach(function (key) {
-        obj[key] = exports.compact(obj[key], refs);
-    });
-
-    return obj;
+    return compactQueue(queue);
 };
 
-exports.isRegExp = function (obj) {
+exports.isRegExp = function isRegExp(obj) {
     return Object.prototype.toString.call(obj) === '[object RegExp]';
 };
 
-exports.isBuffer = function (obj) {
+exports.isBuffer = function isBuffer(obj) {
     if (obj === null || typeof obj === 'undefined') {
         return false;
     }
@@ -19507,7 +19654,7 @@ exports.isBuffer = function (obj) {
     return !!(obj.constructor && obj.constructor.isBuffer && obj.constructor.isBuffer(obj));
 };
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19593,7 +19740,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19680,13 +19827,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":69,"./encode":70}],72:[function(require,module,exports){
+},{"./decode":70,"./encode":71}],73:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20420,7 +20567,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":73,"punycode":63,"querystring":71}],73:[function(require,module,exports){
+},{"./util":74,"punycode":64,"querystring":72}],74:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -20438,7 +20585,7 @@ module.exports = {
   }
 };
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 /*!
  * EventEmitter v4.2.11 - git.io/ee
  * Unlicense - http://unlicense.org/

@@ -17,7 +17,8 @@ var countries = require('./countries'),
     tooltip = require('./tooltip'),
     util = require('./util'),
     validator = require('./validator'),
-    tls = require('./tls');
+    tls = require('./tls'),
+    consentTracking = require('./consentTracking');
 
 // if jQuery has not been loaded, load from google cdn
 if (!window.jQuery) {
@@ -29,6 +30,7 @@ if (!window.jQuery) {
 
 require('./jquery-ext')();
 require('./cookieprivacy')();
+consentTracking.init();
 require('./captcha')();
 
 function initializeEvents() {
@@ -109,6 +111,11 @@ function initializeEvents() {
         });
     });
 
+    $('.consent-tracking-policy').on('click', function (e) {
+        e.preventDefault();
+        consentTracking.show();
+    });
+    
     // main menu toggle
     $('.menu-toggle').on('click', function () {
         $('#wrapper').toggleClass('menu-active');
