@@ -236,6 +236,21 @@ CustomerModel.createAccount = function (email, password, form) {
     Form.get('login').copyTo(newCustomer.object.profile.credentials);
 
     rememberMe = Form.get('profile.login.rememberme').value();
+    
+    /**
+     * @type {dw.system.HookMgr}
+     */
+    const HookMgr = require('dw/system/HookMgr');
+    var hookID = 'app.account.created';
+    if (HookMgr.hasHook(hookID)) {
+        HookMgr.callHook(
+            hookID,
+            hookID.slice(hookID.lastIndexOf('.') + 1),
+            newCustomer.object
+        );
+    } else {
+        require('dw/system/Logger').debug('no hook registered for {0}', hookID);
+    }    
 
     // Logs the customer in.
     return Transaction.wrap(function () {

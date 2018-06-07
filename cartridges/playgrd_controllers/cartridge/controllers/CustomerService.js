@@ -59,6 +59,21 @@ function submit() {
     });
 
     if (contactUsResult && (contactUsResult.getStatus() === Status.OK)) {
+           /**
+         * @type {dw.system.HookMgr}
+         */
+        const HookMgr = require('dw/system/HookMgr');
+        var hookID = 'app.case.created';
+        if (HookMgr.hasHook(hookID)) {
+            HookMgr.callHook(
+                hookID,
+                hookID.slice(hookID.lastIndexOf('.') + 1),
+                contactUsForm
+            );
+        } else {
+            require('dw/system/Logger').debug('no hook registered for {0}', hookID);
+        }
+
         app.getView('CustomerService', {
             ConfirmationMessage: 'edit'
         }).render('content/contactus');
