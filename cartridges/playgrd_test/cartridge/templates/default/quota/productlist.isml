@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<isset name="wishList" value="${pdict.wishList}" scope="page" />
+
+
+<div class="container">
+    <p>
+        ${pdict.date.toLocaleString()}
+        <h1>About You:</h1>
+        Customer ID: ${customer.ID} <br/>
+        Customer registered: ${customer.registered} <br/>
+        Customer authenticated: ${customer.authenticated} <br/>
+        <isif condition="${customer.authenticated}" >
+            <hr>
+            Customer Name: ${customer.profile.firstName} ${customer.profile.lastName} <br/>
+            Customer No: ${customer.profile.customerNo} <br/>
+        </isif>
+
+        <h1>About Wishlist:</h1>        
+        wishlist: id = ${wishList.ID} <br/>
+        total: ${wishList.getItems().getLength()}
+    </p>
+
+    displaying the first 100 elements:
+    <isloop iterator="${wishList.getItems()}" var="item" end="100">
+        <li>${item.ID} | ${item.product.name}</li>
+    </isloop>
+</div>
+
